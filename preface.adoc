@@ -1,0 +1,67 @@
+[preface]
+== 前言
+
+在每天的工作之余抽取一点时间来进行学习总结，内容仅根据个人理解，可能有疏漏之处，欢迎大家提交PR指正。
+
+本项目采用 ``asciidoc`` 语言编写，书目采用 ``AsciidocFX`` 的 ``sample book`` 功能自动生成。
+
+=== todo
+
+==== Version Control
+
+. git
+
+. github
+
+==== Build Tools
+
+. maven
+
+. gradle
+
+
+==== Database
+. redis
+
+. mysql
+
+. elasticsearch
+
+. hbase
+
+==== MQ
+. kafka
+
+. rabbitmq
+
+==== Language
+. java
+
+. kotlin
+
+. go
+
+. python
+
+==== Framework
+
+. spring-framework
+
+. spring-boot
+
+. spring-cloud
+
+. shiro
+
+. mybatis
+
+. netty
+
+==== Docker
+. docker
+
+. kubernetes
+
+==== Linux
+. bash
+. debian

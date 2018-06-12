@@ -1,0 +1,4 @@
+[colophon]
+== 版权说明
+
+Based On link:LICENSE[Apache License Version 2.0]

@@ -1,0 +1,33 @@
+= Half-an-hour-after-work
+Author zxl2014 https://github.com/zxl2014/half-an-hour-after-work
+:doctype: book
+:encoding: utf-8
+:lang: zh_cn
+:toc: left
+:toclevels: 2
+:numbered:
+
+
+////
+Change Book Name, Author's Name and Language for your need.
+
+This is a comment block, you can remove it.
+////
+
+////
+Organize your book chapter by chapter
+////
+
+include::preface.adoc[]
+
+include::colophon.adoc[]
+
+//include::dedication.adoc[]
+
+//include::glossary.adoc[]
+
+//include::build-tool/chapter-build-tool.adoc[]
+
+include::bibliography.adoc[]
+
+include::index.adoc[]

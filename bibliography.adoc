@@ -1,0 +1,20 @@
+[bibliography]
+== 参考数目
+
+大多参考网站资料，少部分参考图书。
+
+[bibliography]
+
+.Websites
+- [asciidoc-syntax-quick-reference] https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[https://asciidoctor
+.org/docs/asciidoc-syntax-quick-reference/]
+- [asciidoc语法中文版] http://houqp.github.io/wbwa/wbwa.html[http://houqp.github.io/wbwa/wbwa.html]
+- [Gradle Official Website] https://gradle.org/[https://gradle.org/]
+
+
+//.Books
+//- [[[taoup]]] Eric Steven Raymond. 'The Art of Unix
+//  Programming'. Addison-Wesley. ISBN 0-13-142901-9.
+//- [[[walsh-muellner]]] Norman Walsh & Leonard Muellner.
+//  'DocBook - The Definitive Guide'. O'Reilly & Associates. 1999.
+//  ISBN 1-56592-580-7.
