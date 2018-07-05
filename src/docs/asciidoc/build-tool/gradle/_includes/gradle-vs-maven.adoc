@@ -1,0 +1,40 @@
+==== 和Maven的差异
+
+Gradle官网的和Maven差异性描述原文 https://gradle.org/maven-vs-gradle/[https://gradle.org/maven-vs-gradle/]。
+
+.灵活性
+
+谷歌采用gradle构建Android不仅仅是因为构建脚本就是代码，更因为gradle是可扩展的。比如gradle允许调用C/C++进行native
+开发。另外，gradle可以扩展到其他生态圈，比如可以嵌入其他系统，因为gradle提供了一套tooling api。
+Gradle和Maven都遵循约定大于配置，但是maven的模型比较僵硬（固定的生命周期），导致一些个性化配置很难实现甚至不可能，而Gradle则可以（gradle没有生命周期，所有的执行流程是由一个个Task
+串联起来的，即Task图）。
+
+.性能
+
+Gradle比Maven有更好的性能。gradle和maven都采用了并行编译，并行依赖处理等方案。gradle的最大不同是避免不需要的工作和渐进性。主要采用以下三点：
+
+Incrementality:: gradle 记录任务的输入和输出，只运行必须的任务，仅处理有变更的文件。
+
+Build Cache:: gradle对于相同的输入，重用其他gradle build输出的cache，对于跨机器的构建也可以。
+
+Gradle Daemon:: gradle长期运行一个后台进程把build信息保存在内存。
+
+
+.User Experience(用户体验)
+
+IDE Support:: gradle提供了Kotlin-based DSL 用于提升IDE的用户体验。
+
+Modern CLI:: gradle提供了一种现代的CLI，它具有诸如``gradle task``之类的可发现特性，以及改进的日志记录和命令行完成。
+
+Build Scan:: Gradle提供了一个交互式的基于web的UI，用于调试和优化构建：构建扫描。这些功能还可以托管在前提下，允许组织收集构建历史并进行趋势分析，比较构建以进行调试，或者优化构建时间。
+
+
+.依赖管理
+
+两者都提供了内置的依赖管理机制，都能本地缓存依赖或者远程下载。
+
+对于库使用者而言，maven 重写依赖仅仅允许修改版本，但是gradle提供了 “依赖选择”和“替代规则”（声明一次，整个工程都生效），替代规则可以利用多个project生成复合build。
+
+Maven只提供了很少的依赖作用域（scope），它会在常见的场景中（例如测试或代码生成）中强制使用笨重的模块架构。例如，在Maven中并没有分离单元测试和集成测试。Gradle允许自定义依赖范围，它提供了更好的建模和更快的构建。
+
+对于发布者而言，Gradle允许发布者声明``api``和``implementation``之间的依赖关系，以防止不需要的库泄露到使用者的类路径中。而Maven则需要发布者通过可选的依赖关系来提供元数据。

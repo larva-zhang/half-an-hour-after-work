@@ -1,0 +1,27 @@
+==== Gradle 简介
+
+Gradle是一种通用构建工具，其官网 https://gradle.org/[https://gradle.org/] 上对Gradle的特性描述如下：
+
+.Build Anything(构建任何工程)
+[source]
+--
+Write in Java, C++, Python or your language of choice. Package for deployment on any platform. Go monorepo or multi-repo. And rely on Gradle's unparalleled versatility to build it all.
+
+Gradle具有无与伦比的强大构建能力，支持构建由Java, C++, Python或其他语言编写的程序，支持跨平台，支持发布到单一或多个仓库。
+--
+
+.Automate Everything(自动化一切)
+[source]
+--
+Use Gradle's rich API and mature ecosystem of plugins and integrations to get ambitious about automation. Model, integrate and systematize the delivery of your software from end to end.
+
+使用Gradle丰富的API和成熟的插件系统以及集成生态来实现自动化。从而进行模块化、集成化和系统化的快速交付。
+--
+
+.Deliver Faster(更快交付)
+[source]
+--
+Scale out development with elegant, blazing-fast builds. From compile avoidance to advanced caching and beyond, we pursue performance relentlessly so your team can deliver continuously.
+
+用优雅、快速的构建扩展开发。从编译避免到高级缓存，再到更高的缓存，我们将不懈地追求性能，以便您的团队能够持续交付。
+--

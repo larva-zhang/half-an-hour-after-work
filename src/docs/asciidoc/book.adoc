@@ -15,6 +15,8 @@ Author zxl2014 https://github.com/zxl2014/half-an-hour-after-work
 :source-language: asciidoc
 :idprefix:
 :idseparator: -
+:imagesdir: _images
+:includedir: _includes
 
 ////
 Change Book Name, Author's Name and Language for your need.
