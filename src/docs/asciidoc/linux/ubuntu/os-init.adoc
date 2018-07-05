@@ -2,4 +2,7 @@
 
 系统安装完成后，需要进行一系列的设置以及安装一系列的软件。
 
-* 切换系统源
+[source,shell]
+----
+include::zhanghan-ubuntu-init.sh[]
+----
