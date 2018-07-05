@@ -1,12 +1,20 @@
 = Half-an-hour-after-work
 Author zxl2014 https://github.com/zxl2014/half-an-hour-after-work
+:toc: left
+:toclevels: 3
 :doctype: book
 :encoding: utf-8
 :lang: zh_cn
-:toc: left
-:toclevels: 2
 :numbered:
-
+:backend: html5
+:page-layout: docs
+:sectanchors:
+:sectlinks:
+:icons: font
+:source-highlighter: coderay
+:source-language: asciidoc
+:idprefix:
+:idseparator: -
 
 ////
 Change Book Name, Author's Name and Language for your need.
@@ -25,8 +33,6 @@ include::colophon.adoc[]
 //include::dedication.adoc[]
 
 //include::glossary.adoc[]
-
-//include::build-tool/chapter-build-tool.adoc[]
 
 include::bibliography.adoc[]
 
