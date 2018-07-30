@@ -1,0 +1,78 @@
+==== Simple Gradle Project
+
+创建一个Gradle Project非常简单，仅需要两步：
+
+* 创建工程目录
+
+[source,bash]
+----
+$ mkdir -p gradle-demo/simple-gradle-project
+
+$ cd gradle-demo/simple-gradle-project
+----
+
+* 执行gradle init task
+
+[source,bash]
+----
+$ gradle init
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :wrapper
+> Task :init
+
+BUILD SUCCESSFUL in 9s
+2 actionable tasks: 2 executed
+----
+
+===== gradle init
+
+gradle init 命令会初始化生成 gradle project 所需的相关配置及可执行文件，当然前提是已经install了gradle并且配置了``JAVA_HOME``环境变量。以下是init命令生成的文件清单。
+
+.gradle init (Based On Groovy DSL)
+****
+[source]
+----
+.
+|-- build.gradle
+|-- gradle
+|   `-- wrapper
+|       |-- gradle-wrapper.jar
+|       `-- gradle-wrapper.properties
+|-- gradlew
+|-- gradlew.bat
+`-- settings.gradle
+
+----
+. ``build.gradle``  基于``Groovy DSL``的配置脚本以及 task 定义文件
+. ``gradle-wrapper.jar``  ``Gradle Wrapper``的可执行jar
+. ``gradle-wrapper.properties``  ``Gradle Wrapper``配置
+. ``gradlew``  类Unix系统的``Gradle Wrapper`` shell
+. ``gradlew.bat`` Windows系统的``Gradle Wrapper`` shell
+. ``settings.gradle`` 构建参数配置文件
+****
+
+
+.gradle init --dsl kotlin (Based On Kotlin DSL Java8及以上支持)
+****
+[source]
+----
+.
+|-- build.gradle.kts
+|-- gradle
+|   `-- wrapper
+|       |-- gradle-wrapper.jar
+|       `-- gradle-wrapper.properties
+|-- gradlew
+|-- gradlew.bat
+`-- settings.gradle.kts
+----
+. ``build.gradle.kts``  基于``Kotlin DSL``的配置脚本以及 task 定义文件
+. ``gradle-wrapper.jar``  ``Gradle Wrapper``的可执行jar
+. ``gradle-wrapper.properties``  ``Gradle Wrapper``配置
+. ``gradlew``  类Unix系统的``Gradle Wrapper`` shell
+. ``gradlew.bat`` Windows系统的``Gradle Wrapper`` shell
+. ``settings.gradle.kts`` 基于``Kotlin DSL``构建参数配置文件
+****
+
+===== gradle task
+
