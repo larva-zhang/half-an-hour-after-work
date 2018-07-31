@@ -1,0 +1,17 @@
+== Elastic Stack
+:doctype: article
+:encoding: utf-8
+:lang: zh_cn
+:numbered:
+:backend: html5
+:page-layout: docs
+:sectanchors:
+:sectlinks:
+:icons: font
+:source-highlighter: coderay
+:source-language: asciidoc
+:idprefix:
+:idseparator: -
+
+include::./elastic-stack-overview.adoc[]
+

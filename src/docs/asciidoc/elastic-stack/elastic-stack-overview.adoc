@@ -1,0 +1,68 @@
+=== Elastic Stack Overview
+
+.Elastic Official Website
+https://www.elastic.co[https://www.elastic.co]
+
+.Elastic Docker Official Website
+https://www.docker.elastic.co[https://www.docker.elastic.co]
+
+.Elastic Official Guide
+https://www.elastic.co/guide/index.html[https://www.elastic.co/guide/index.html]
+
+.Elastic GitHub Repo
+https://github.com/elastic[https://github.com/elastic]
+
+.Elastic 中文社区
+https://elasticsearch.cn/[https://elasticsearch.cn/]
+
+
+==== 什么是Elastic Stack
+[source]
+.The Elastic Stack
+****
+Built on an open source foundation, the Elastic Stack lets you reliably and securely take data from any source, in any format, and search, analyze, and visualize it in real time.
+
+Elastic Stack构建于开源基础之上，可让您可靠，安全地从任何来源，任何格式获取数据，并实时搜索，分析和可视化。
+****
+
+==== Elastic Stack Products
+Elasticsearch:: A Distributed RESTful Search Engine.
+
+Kibana:: A browser-based analytics and search dashboard for Elasticsearch.
+
+Logstash:: A server-side data processing pipeline that ingests data from a multitude of sources simultaneously,
+transforms it, and then sends it to your favorite "stash." (naturally is Elasticsearch).
+
+Beats:: The Lightweight Shippers of the Elastic Stack.
+
+.Officially supported Beats
+|===
+|Beat |Description
+
+|Auditbeat
+|通过将 Linux Kernel 内的各种事件统统接入到 Elastic Stack 来进行安全审计。
+
+|Filebeat
+|基于tail的形式采集日志
+
+|Heartbeat
+|基于ping的心跳检测
+
+|Metricbeat
+|从操作系统和服务中采集指标
+
+|Packetbeat
+|通过嗅探数据包来监控网络和应用程序
+
+|Winlogbeat
+|获取并发送Windows事件日志
+|===
+
+==== Elastic Stack的使用场景
+. 日志搜索
+. 站内搜索
+. 指标采集
+. 安全分析
+. APM
+. 应用搜索
+. 业务数据分析

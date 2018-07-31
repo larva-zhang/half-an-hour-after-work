@@ -2,3 +2,4 @@
 
 include::build-tool/chapter-build-tool.adoc[]
 
+include::elastic-stack/chapter-elastic-stack.adoc[]
