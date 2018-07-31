@@ -1,4 +1,4 @@
-==== Gradle 简介
+=== Gradle 简介
 
 Gradle是一种通用构建工具，其官网 https://gradle.org/[https://gradle.org/] 上对Gradle的特性描述如下：
 

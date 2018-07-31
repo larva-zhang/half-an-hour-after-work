@@ -1,4 +1,4 @@
-==== 和Maven的差异
+=== 和Maven的差异
 
 Gradle官网的和Maven差异性描述原文 https://gradle.org/maven-vs-gradle/[https://gradle.org/maven-vs-gradle/]。
 

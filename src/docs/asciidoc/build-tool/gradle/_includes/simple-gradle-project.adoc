@@ -1,4 +1,4 @@
-==== Simple Gradle Project
+=== Simple Gradle Project
 
 创建一个Gradle Project非常简单，仅需要两步：
 
@@ -24,7 +24,7 @@ BUILD SUCCESSFUL in 9s
 2 actionable tasks: 2 executed
 ----
 
-===== gradle init
+==== gradle init
 
 gradle init 命令会初始化生成 gradle project 所需的相关配置及可执行文件，当然前提是已经install了gradle并且配置了``JAVA_HOME``环境变量。以下是init命令生成的文件清单。
 
@@ -74,5 +74,5 @@ gradle init 命令会初始化生成 gradle project 所需的相关配置及可�
 . ``settings.gradle.kts`` 基于``Kotlin DSL``构建参数配置文件
 ****
 
-===== gradle task
+==== gradle task
 

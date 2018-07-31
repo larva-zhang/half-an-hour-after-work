@@ -1,4 +1,4 @@
-=== Elastic Stack Overview
+== Elastic Stack Overview
 
 .Elastic Official Website
 https://www.elastic.co[https://www.elastic.co]
@@ -16,7 +16,7 @@ https://github.com/elastic[https://github.com/elastic]
 https://elasticsearch.cn/[https://elasticsearch.cn/]
 
 
-==== 什么是Elastic Stack
+=== 什么是Elastic Stack
 [source]
 .The Elastic Stack
 ****
@@ -25,7 +25,7 @@ Built on an open source foundation, the Elastic Stack lets you reliably and secu
 Elastic Stack构建于开源基础之上，可让您可靠，安全地从任何来源，任何格式获取数据，并实时搜索，分析和可视化。
 ****
 
-==== Elastic Stack Products
+=== Elastic Stack Products
 Elasticsearch:: A Distributed RESTful Search Engine.
 
 Kibana:: A browser-based analytics and search dashboard for Elasticsearch.
@@ -58,7 +58,7 @@ Beats:: The Lightweight Shippers of the Elastic Stack.
 |获取并发送Windows事件日志
 |===
 
-==== Elastic Stack的使用场景
+=== Elastic Stack的使用场景
 . 日志搜索
 . 站内搜索
 . 指标采集

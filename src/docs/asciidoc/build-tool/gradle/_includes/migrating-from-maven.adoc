@@ -1,4 +1,4 @@
-==== 从Maven迁移到Gradle
+=== 从Maven迁移到Gradle
 
 最理想的情况下，只需在Maven Root工程下执行``gradle init``即可自动完成转换而无需做任何手动修改， https://docs.gradle.org/4.7/userguide/build_init_plugin.html?&_ga=2.194299502.214201549.1529570041-1982665499.1528361753#sec:pom_maven_conversion_[可以自动完成转换的内容列表]。
 
