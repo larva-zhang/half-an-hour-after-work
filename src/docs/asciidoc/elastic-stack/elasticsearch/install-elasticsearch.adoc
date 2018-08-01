@@ -1,0 +1,276 @@
+=== Installing Elasticsearch
+
+Elasticsearch官方支持多种安装方式：
+
+. zip/tar.gz
+.. https://www.elastic.co/guide/en/elasticsearch/reference/6.3/zip-targz.html[Install Elasticsearch with
+.zip or .tar.gz]
+.. https://www.elastic.co/guide/en/elasticsearch/reference/6.3/zip-windows.html[Install Elasticsearch with .zip on
+Windows]
+. deb https://www.elastic.co/guide/en/elasticsearch/reference/6.3/deb.html[Install Elasticsearch with Debian Package]
+. rpm https://www.elastic.co/guide/en/elasticsearch/reference/6.3/rpm.html[Install Elasticsearch with RPM]
+. msi https://www.elastic.co/guide/en/elasticsearch/reference/6.3/windows.html[Install Elasticsearch with Windows MSI
+ Installer]
+. docker https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docker.html[Install Elasticsearch with Docker]
+. Puppet https://github.com/elastic/puppet-elasticsearch[puppet-elasticsearch]
+. Chef https://github.com/elastic/cookbook-elasticsearch[cookbook-elasticsearch]
+. Ansible https://github.com/elastic/ansible-elasticsearch[
+ansible-elasticsearch]
+
+根据实际场景需要自行选择即可，此处仅针对docker安装方式做说明。
+Elasticsearch的docker镜像 https://www.docker.elastic.co/[www.docker.elastic.co]，source code地址 https://github.com/elastic/elasticsearch-docker/tree/6.3[https://github.com/elastic/elasticsearch-docker/tree/6.3]，镜像基于centos构建。
+
+.警告
+[WARNING]
+====
+www.docker.elastic.co上的docker镜像包含开源和免费商业功能以及付费商业功能。付费商业功能在Elastic许可证下仅允许免费试用30天。
+====
+
+==== pull docker image
+[source,bash]
+--
+$ docker pull docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+--
+
+==== development mode(single-node)
+[source,bash]
+--
+$ docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+--
+
+==== production mode(cluster)
+single-node模式只适合开发调试阶段，生产环境还是需要使用Cluster模式保证高可用。
+
+===== Docker Compose
+[source,bash]
+--
+$ mkdir -p elastic-stack-demo/elasticsearch/docker/compose
+$ cd elastic-stack-demo/elasticsearch/docker/compose
+$ vim docker-compose.yml
+--
+
+.docker-compose.yml Example:
+[source,yaml]
+--
+version: '2' //<1>
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster //<2>
+      - bootstrap.memory_lock=true //<3>
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" //<4>
+    ulimits:
+      memlock: //<3>
+        soft: -1
+        hard: -1
+    volumes: //<5>
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch" // <6>
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes: //<5>
+      - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+volumes: //<5>
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+
+networks:
+  esnet:
+--
+<1> docker-compose file版本，具体看安装的docker-compose版本，参考 https://docs.docker.com/compose/compose-file/[compose-file-format]
+<2> 定义集群名称
+<3> ES启动时对jvm堆大小参数检查，并禁止swap
+<4> ES运行时的jvm启动参数
+<5> 使用``Docker named volumes``挂载了esdata1和esdata2
+<6> 集群自动发现采用单播模式，并定义了将通过docker network和elasticsearch节点通信
+
+.Startup
+[source,bash]
+--
+$ docker-compose up
+--
+
+.Inspect Cluster Status
+[source,bash]
+--
+$ curl http://127.0.0.1:9200/_cat/health
+1533027978 09:06:18 docker-cluster green 1 1 0 0 0 0 0 0 - 100.0%
+--
+
+.Access Console Logs
+docker默认可使用``docker logs -f CONTAINER_ID``来查看console日志。
+[source,bash]
+--
+$ docker logs -f edb7261fdcda
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+[2018-07-31T04:24:32,835][INFO ][o.e.n.Node               ] [] initializing ...
+[2018-07-31T04:24:32,933][INFO ][o.e.e.NodeEnvironment    ] [yKNdrZA] using [1] data paths, mounts [[/ (none)]], net usable_space [9.4gb], net total_space [45.7gb], types [aufs]
+[2018-07-31T04:24:32,933][INFO ][o.e.e.NodeEnvironment    ] [yKNdrZA] heap size [990.7mb], compressed ordinary object pointers [true]
+[2018-07-31T04:24:32,935][INFO ][o.e.n.Node               ] [yKNdrZA] node name derived from node ID [yKNdrZAOTCmnPs-qCTicEA]; set [node.name] to override
+[2018-07-31T04:24:32,935][INFO ][o.e.n.Node               ] [yKNdrZA] version[6.3.2], pid[1], build[default/tar/053779d/2018-07-20T05:20:23.451332Z], OS[Linux/4.13.0-32-generic/amd64], JVM["Oracle Corporation"/OpenJDK 64-Bit Server VM/10.0.2/10.0.2+13]
+[2018-07-31T04:24:32,935][INFO ][o.e.n.Node               ] [yKNdrZA] JVM arguments [-Xms1g, -Xmx1g, -XX:+UseConcMarkSweepGC, -XX:CMSInitiatingOccupancyFraction=75, -XX:+UseCMSInitiatingOccupancyOnly, -XX:+AlwaysPreTouch, -Xss1m, -Djava.awt.headless=true, -Dfile.encoding=UTF-8, -Djna.nosys=true, -XX:-OmitStackTraceInFastThrow, -Dio.netty.noUnsafe=true, -Dio.netty.noKeySetOptimization=true, -Dio.netty.recycler.maxCapacityPerThread=0, -Dlog4j.shutdownHookEnabled=false, -Dlog4j2.disable.jmx=true, -Djava.io.tmpdir=/tmp/elasticsearch.5kUp7tqT, -XX:+HeapDumpOnOutOfMemoryError, -XX:HeapDumpPath=data, -XX:ErrorFile=logs/hs_err_pid%p.log, -Xlog:gc*,gc+age=trace,safepoint:file=logs/gc.log:utctime,pid,tags:filecount=32,filesize=64m, -Djava.locale.providers=COMPAT, -XX:UseAVX=2, -Des.cgroups.hierarchy.override=/, -Des.path.home=/usr/share/elasticsearch, -Des.path.conf=/usr/share/elasticsearch/config, -Des.distribution.flavor=default, -Des.distribution.type=tar]
+...
+--
+
+.Shutdown Cluster
+正常关闭docker容器，但仍保留数据卷，以便下次重启。
+[source,bash]
+--
+$ docker-compose down
+--
+
+.Shutdown And Destory Data Volumes
+[source,bash]
+--
+$ docker-compose down -v
+--
+
+===== Docker Run
+``docker run``和``docker-compose``在本质上并无差别，``docker run``可以通过指定``-e "cluster
+.name=mynewclustername"``的形式指定环境变量，也可以通过指定挂载配置文件的形式来达到相同的效果。
+
+.Bind-mounted configuration
+Elasticsearch在容器中会从``/usr/share/elasticsearch/config/``目录下加载集群配置以及JVM参数，所以可以将自定义配置文件挂载到config目录下。
+[source,bash]
+----
+$ mkdir -p elastic-stack-demo/elasticsearch/docker/run
+$ cd elastic-stack-demo/elasticsearch/docker/run
+$ cp elastic-stack-demo/elasticsearch/docker/compose/docker-compose.yml custom_elasticsearch.yml
+$ docker run -v full_path_to/custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+----
+
+.mounted configuration注意事项
+[IMPORTANT]
+====
+docker容器中是以用户``elasticsearch``来启动服务的，``uid:gid 1000:1000``。所以如果使用挂载配置文件的方式，必须保证挂载的目录和文件对``elasticsearch``用户是可访问的。
+====
+
+==== 生产模式注意事项
+===== 文件读写权限
+默认情况下，ES会在容器中以``elasticsearch``用户运行，用户id以及用户组id(``uid:gid``)为
+``1000:1000``。所以必须保证``elasticsearch``用户对挂载的目录或文件有可读权限，对数据和日志文件夹有可写权限。
+
+.设置方法：
+1.将挂载目录授权给gid为``1000``或``0``::
+[source,bash]
+----
+mkdir esdatadir
+chmod g+rwx esdatadir
+chgrp 1000 esdatadir
+----
+2.添加环境变量``TAKE_FILE_OWNERSHIP``强制容器改变挂载目录权限:: 在这种情况下，挂载目录所有权将变更为``uid:gid 1000:0``。
+[source,bash]
+----
+docker run -e "TAKE_FILE_OWNERSHIP"
+----
+
+===== 进程最大VMA(虚拟内存区域)数
+系统参数``vm.max_map_count``不得小于``262144``，否则启动会报如下错误：
+[source,bash]
+----
+elasticsearch     | ERROR: [1] bootstrap checks failed
+elasticsearch     | [1]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+elasticsearch2    | ERROR: [1] bootstrap checks failed
+elasticsearch2    | [1]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+elasticsearch2    | [2018-08-01T08:12:55,324][INFO ][o.e.n.Node               ] [OriPJNU] stopping ...
+elasticsearch     | [2018-08-01T08:12:55,325][INFO ][o.e.n.Node               ] [TYoRv2z] stopping ...
+elasticsearch     | [2018-08-01T08:12:55,367][INFO ][o.e.n.Node               ] [TYoRv2z] stopped
+elasticsearch     | [2018-08-01T08:12:55,368][INFO ][o.e.n.Node               ] [TYoRv2z] closing ...
+elasticsearch     | [2018-08-01T08:12:55,375][INFO ][o.e.n.Node               ] [TYoRv2z] closed
+elasticsearch2    | [2018-08-01T08:12:55,382][INFO ][o.e.n.Node               ] [OriPJNU] stopped
+elasticsearch2    | [2018-08-01T08:12:55,382][INFO ][o.e.n.Node               ] [OriPJNU] closing ...
+elasticsearch2    | [2018-08-01T08:12:55,390][INFO ][o.e.n.Node               ] [OriPJNU] closed
+elasticsearch2    | [2018-08-01T08:12:55,391][INFO ][o.e.x.m.j.p.NativeController] Native controller process has stopped - no new native processes can be started
+----
+
+.查询当前``vm.max_map_count``
+[source,bash]
+----
+$ grep vm.max_map_count /etc/sysctl.conf
+----
+如果没有则为系统默认值，通常是``65530``。
+
+
+.设置``vm.max_map_count``
+[source,bash]
+----
+$ sudo sysctl -w vm.max_map_count=262144
+
+vm.max_map_count = 262144
+----
+
+.为什么要调整进程最大VMA数量
+[TIP]
+====
+虚拟内存区域是一个连续的虚拟地址空间区域。在进程的生命周期中，每当程序尝试在内存中映射文件，链接到共享内存段，或者分配堆空间的时候，这些区域将被创建。调优这个值将限制进程可拥有VMA的数量。限制一个进程拥有VMA
+的总数可能导致应用程序出错，因为当进程达到了VMA上限但又只能释放少量的内存给其他的内核进程使用时，操作系统会抛出内存不足的错误。如果你的操作系统在NORMAL区域仅占用少量的内存，那么调低这个值可以帮助释放内存给内核用。
+
+https://blog.csdn.net/teaey/article/details/21626621[Java使用NIO MappedByteBuffer因VMA不足导致OOM]
+====
+
+===== 用户最大进程数
+``nproc``限制了用户所能创建的最大进程数量，ES容器最好是将这个限制上限调高。
+[source,bash]
+--
+$ docker run --ulimit nofile=65536:65536
+--
+
+===== 进程最大打开文件数
+``nofile``限制了单个进程内所能打开的文件FD(file descriptor)数量，ES容器最好是将这个限制上限调高。
+
+===== 禁用Swap和堆内存扩容
+swap和堆内存扩容会大大降低ES的性能，所以通常需要在生成模式下禁用这两项。
+
+.yml：
+[souce,yaml]
+----
+environment:
+ - bootstrap.memory_lock=true
+ - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+ulimits:
+ memlock:
+  soft: -1
+  hard: -1
+----
+
+.docker run:
+[souce,bash]
+----
+$ docker run -e "bootstrap.memory_lock=true" -e ES_JAVA_OPTS="-Xms16g -Xmx16g" --ulimit memlock=-1:-1
+----
+
+===== 开放端口设置
+建议使用``--publish-all``随机发布端口，除非只在每台机器上只发布一个ES实例。
+
+===== 单独挂载数据目录
+永远都挂载一个数据卷到``/usr/share/elasticsearch/data``上，就像上面的示例中一样。理由如下：
+
+. ES的数据不会丢失，除非删除了数据卷；
+. Elasticsearch对I/O依赖较重，Docker的多层存储文件系统不适合高速I/O；
+. 允许使用Docker Volumes Plugin，即可以和操作系统使用不同的FS。
+
+===== 逻辑卷设置
+如果使用了逻辑卷，则确保配置docker使用``direct-lvm``，而不是使用默认的``loop-lvm``。
+
+===== 根据情况选择日志驱动
+请考虑使用其他日志记录驱动程序集中日志。 另请注意，默认的``json-file``日志记录驱动程序不适合生产使用。

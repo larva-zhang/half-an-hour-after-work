@@ -1,4 +1,4 @@
-= Elastic Stack
+== Elasticsearch
 :doctype: article
 :encoding: utf-8
 :lang: zh_cn
@@ -13,6 +13,4 @@
 :idprefix:
 :idseparator: -
 
-include::./elastic-stack-overview.adoc[]
-
-include::elasticsearch/chapter-elasticsearch.adoc[]
+include::install-elasticsearch.adoc[]
