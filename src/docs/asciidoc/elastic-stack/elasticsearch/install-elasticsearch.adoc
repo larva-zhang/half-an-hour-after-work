@@ -44,8 +44,9 @@ single-node模式只适合开发调试阶段，生产环境还是需要使用Clu
 ===== Docker Compose
 [source,bash]
 --
-$ mkdir -p elastic-stack-demo/elasticsearch/docker/compose
-$ cd elastic-stack-demo/elasticsearch/docker/compose
+$ mkdir -p elastic-stack-demo/elasticsearch/install/docker/compose
+$ cd elastic-stack-demo/elastics
+earch/install/docker/compose
 $ vim docker-compose.yml
 --
 
@@ -153,9 +154,9 @@ $ docker-compose down -v
 Elasticsearch在容器中会从``/usr/share/elasticsearch/config/``目录下加载集群配置以及JVM参数，所以可以将自定义配置文件挂载到config目录下。
 [source,bash]
 ----
-$ mkdir -p elastic-stack-demo/elasticsearch/docker/run
-$ cd elastic-stack-demo/elasticsearch/docker/run
-$ cp elastic-stack-demo/elasticsearch/docker/compose/docker-compose.yml custom_elasticsearch.yml
+$ mkdir -p elastic-stack-demo/elasticsearch/install/docker/run
+$ cd elastic-stack-demo/elasticsearch/install/docker/run
+$ cp elastic-stack-demo/elasticsearch/install/docker/compose/docker-compose.yml custom_elasticsearch.yml
 $ docker run -v full_path_to/custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml docker.elastic.co/elasticsearch/elasticsearch:6.3.2
 ----
 
