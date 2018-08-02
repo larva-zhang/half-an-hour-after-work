@@ -1,0 +1,158 @@
+[[import-settings]]
+=== 重要的ES配置
+
+在生产环境中必须考虑修改某些默认设置。
+
+==== `path.data` and `path.logs`
+
+生产环境中建议将 ``data``和``logs``目录指定到单独的磁盘上，这样在做一些高风险的操作(例如升级ES版本)时可确保不会误删数据和日志。尤其是在使用``.zip``或``.tar
+.gz``压缩包安装时，``data``和``logs``目录默认在``$ES_HOME``(解压缩目录)下。
+
+.path settings example
+
+[source,yaml]
+--
+path:
+  logs: /var/log/elasticsearch
+  data: /var/data/elasticsearch
+--
+
+``path.data``还可以设置多个路径，在这种情况下，所有路径都将用于存储数据（尽管属于单个分片的文件还是会全部存储在同一数据路径中）：
+
+[source.yaml]
+--
+path:
+  data:
+    - /mnt/elasticsearch_1
+    - /mnt/elasticsearch_2
+    - /mnt/elasticsearch_3
+--
+
+==== `cluster.name`
+
+``cluster.name``用于标识节点所属的集群，新增节点会根据该配置自动加入同名的集群。该配置默认值为``elasticsearch``，在生产环境中建议修改成更有业务含义的名称。
+
+[source,yaml]
+--
+cluster.name: logging-prod
+--
+
+NOTE: 注意不要重名，否则节点会加入到错误的集群中去。
+
+==== `node.name`
+
+默认情况下，ES会使用UUID的前7位作为节点的id。##注意：节点id是持久化的，即使重启也不会变更，默认节点名称也是如此。##
+
+所以给节点起一个有意义的名称是很必要的，而且这个名字即使重启也不会变更。
+
+[source,yaml]
+--
+node.name: prod-data-2
+--
+
+也可以设置成机器的``HOSTNAME``
+
+[source,yaml]
+--
+node.name: ${HOSTNAME}
+--
+
+==== `network.host`
+
+默认情况下，Elasticsearch仅绑定到环回地址 - 例如 127.0.0.1和[:: 1]。这只适用于单节点开发模式。
+
+TIP: 实际上，可以从单个节点上的相同``$ES_HOME``位置启动多个节点。 这对于测试Elasticsearch形成集群的能力非常有用，但它不是推荐用于生产的配置。
+
+为了与其他服务器上的节点进行通信并形成集群，您的节点将需要绑定到非环回地址。 虽然有许多网络设置 https://www.elastic.co/guide/en/elasticsearch/reference/6.3/modules-network.html[network settings]，但通常您需要配置的是``network.host``：
+
+[source,yaml]
+--
+network.host: 192.168.1.10
+--
+
+``network.host``可以识别某些特殊值，例如``_local_``，``_ site_``，``_global_``，还有一些修饰符，如``:ip4``和``:ip6``，详细信息可在 https://www.elastic.co/guide/en/elasticsearch/reference/6.3/modules-network.html#network-interface-values[Special values for
+`network.host`]中找到。
+
+IMPORTANT: 一旦为network.host提供自定义设置，Elasticsearch就会假定您正在从开发模式转移到生产模式，并将许多系统启动检查从警告升级到异常。
+
+==== Discovery settings
+
+Elasticsearch使用名为“Zen Discovery”的自定义发现实现进行节点到节点的群集和主选举。 在投入生产之前，应该配置两个重要的发现设置。
+
+===== `discovery.zen.ping.unicast.hosts`
+
+没有 `network`配置时，Elasticsearch会自动绑定到回环地址，通过扫描9300到9305端口尝试连接到本机的其他ES节点。但是当需要连接到其他机器上的节点时，就需要配置上集群中可连接的其他节点的列表，例如：
+
+[source,ymal]
+----
+discovery.zen.ping.unicast.hosts:
+   - 192.168.1.10:9300 // <1>
+   - 192.168.1.11 // <2>
+   - seeds.mydomain.com // <3>
+----
+<1> 指定节点ip以及端口号
+<2> 未指定端口号时，默认使用``transport.profiles.default.port``端口，失败时会使用``transport.tcp.port``端口
+<3> 会尝试连接域名指向的所有ip机器上的节点
+
+===== `discovery.zen.ping.minimum_master_nodes`
+
+为防止数据丢失，配置``discovery.zen.minimum_master_nodes``至关重要，这样每个可升级为master节点的节点都知道为了形成集群必须可见的符合master节点条件的最小节点数。即``discovery.zen.minimum_master_nodes``可以在网络故障时防止集群脑裂。
+
+为避免分裂大脑，应将符合成为master节点条件的最小节点数设置一个合理数量，计算公式如下：
+
+[source,text]
+----
+# 符合master节点条件的最小节点数 = 所有符合master条件节点数 / 2 + 1
+(master_eligible_nodes / 2) + 1
+----
+
+假设总共有3个可能成为master的节点，则 ``discovery.zen.minimum_master_nodes``应该为 ``(3/2)+1 = 2``。
+
+[source,yaml]
+----
+discovery.zen.minimum_master_nodes: 2
+----
+
+==== JVM Heap Size
+
+JVM堆内存在开发模式下默认是``-Xms1g -Xmx1g``，生产模式下则需要调整该值以达到性能最优，设置方法可参考 <<jvm-options,``jvm.options``格式>>。
+
+推荐的经验法则：
+
+* 设置最小堆内存等于最大堆内存，即禁止堆内存扩张。
+
+* Elasticsearch可用的堆越多，它可用于缓存的内存就越多。 但请注意，过多的堆可能会使您陷入长时间的垃圾收集暂停。
+
+* 最大堆内存不要超过物理内存的50%，确保有足够的内存可用于内核做系统缓存。
+
+* 不要将``Xmx``设置为超过JVM CompressedOops的截止内存地址上限值，该上限的确切值在不同机器上会有小幅度变化但接近32 GB。CompressedOops的原理可参考 https://blog.csdn.net/seatalks/article/details/52981819[CompressedOops: Java中compressed references介绍]。可以通过查找日志来验证是否在限制之下，如下所示：
++
+[source,text]
+----
+heap size [1.9gb], compressed ordinary object pointers [true]
+----
+
+* 更好的做法是，尽量保持``Xmx``低于零基础压缩oops的阈值。在大多数系统上26 GB是安全的，但在某些系统上可能高达30 GB。可以通过使用JVM选项``-XX:+UnlockDiagnosticVMOptions -XX:+PrintCompressedOopsMode``启动Elasticsearch并查找如下所示的行来验证是否在限制之下：
++
+--
+    heap address: 0x000000011be00000, size: 27648 MB, zero based Compressed Oops
+
+如果不是零基础压缩oops，则日志为：
+
+    heap address: 0x0000000118400000, size: 28672 MB, Compressed Oops with base: 0x00000001183ff000
+--
+
+==== JVM heap dump path
+
+默认情况下，Elasticsearch将JVM heap dump文件存放到 ``data``目录。如果此路径不适合接收堆转储，则应修改``jvm.options``中的条目``-XX:HeapDumpPath = xxx``。
+如果指定固定文件名而不是目录，则JVM将重复使用相同的文件;
+这是一种防止堆转储在堆转储路径中累积的机制。 或者，可以通过操作系统配置crontab任务删除过时的dump文件。
+
+==== JVM GC日志
+
+默认情况下，Elasticsearch已经打开了JVM GC日志，且GC日志默认存放在Elasticsearch日志相同的目录下。默认配置是每64 MB滚动一次日志，最大占用2GB磁盘空间。
+
+==== JVM fatal error日志
+
+默认情况下，Elasticsearch将JVM配置为将致命错误日志写入默认日志记录目录。这些是JVM在遇到致命错误（例如，分段错误）时生成的日志。如果此路径不适合接收日志，则应将``jvm
+.options``中的条目``-XX:ErrorFile = XXX``修改为其他路径。

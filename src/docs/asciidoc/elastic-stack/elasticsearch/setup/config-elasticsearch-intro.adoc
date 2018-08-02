@@ -1,3 +1,4 @@
+[[config-elasticsearch-intro]]
 === Elasticsearch配置简介
 
 ES有良好的默认配置，仅需要很少的配置就能运行。且大部分配置项都能通过API在运行时变更。
@@ -46,6 +47,7 @@ node.name:    ${HOSTNAME}
 network.host: ${ES_NETWORK_HOST}
 --------------------------------------------------
 
+[[jvm-options]]
 ==== ``jvm.options``格式
 
 * 空白行会被忽略
@@ -110,9 +112,11 @@ Elasticsearch内置了3个属性：
 `${sys:es.logs.cluster_name}`:: 集群名称，在默认配置中用作日志文件名的前缀
 
 `${sys:es.logs.node_name}`:: 节点名称，如果有明确设置过节点名称的话
+[horizontal]
 
-.ES日志属性用法
-====
+
+Examples:
+
 * `elasticsearch.yml`
 +
 [source,yaml]
@@ -135,9 +139,9 @@ node.name: node1
 -------------------------------------------
 /var/log/elasticsearch/production/node1.log
 -------------------------------------------
-====
 
-.ES``log4j2.properties``Demo
+* ``log4j2.properties``
++
 [source,properties]
 --------------------------------------------------
 appender.rolling.type = RollingFile <1>
