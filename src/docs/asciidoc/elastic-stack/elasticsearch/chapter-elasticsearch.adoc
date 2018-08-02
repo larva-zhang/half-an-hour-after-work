@@ -13,6 +13,8 @@
 :idprefix:
 :idseparator: -
 
-include::install-elasticsearch.adoc[]
+include::setup/install-elasticsearch.adoc[]
 
-include::config-elasticsearch-intro.adoc[]
+include::setup/config-elasticsearch-intro.adoc[]
+
+include::setup/important-settings.adoc[]

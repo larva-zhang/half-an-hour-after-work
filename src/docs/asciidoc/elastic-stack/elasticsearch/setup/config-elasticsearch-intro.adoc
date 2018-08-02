@@ -175,3 +175,17 @@ appender.rolling.strategy.action.condition.nested_condition.exceeds = 2GB <13>
 <11> 只删除主日志
 <12> 仅在累积了太多压缩日志时才删除
 <13> 压缩日志的大小条件为2 GB
+
+==== 已废弃功能日志
+除常规日志记录外，Elasticsearch还允许您启用已弃用操作的日志记录。 例如，如果您将来需要迁移某些功能，这可以让您尽早确定。 默认情况下，将在WARN级别启用弃用日志记录，该级别是发出所有弃用日志消息的级别。
+
+[source,properties]
+--
+logger.deprecation.level = warn
+--
+
+这将在日志目录中创建每日滚动弃用日志文件。 定期检查此文件，尤其是当您打算升级到新的主要版本时。
+
+默认日志记录配置已将弃用日志的卷策略设置为在1 GB后滚动和压缩，并最多保留五个日志文件（四个滚动日志和活动日志）。
+
+您可以通过将弃用日志级别设置为error来在config / log4j2.properties文件中禁用它。
