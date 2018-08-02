@@ -1,0 +1,177 @@
+=== Elasticsearch配置简介
+
+ES有良好的默认配置，仅需要很少的配置就能运行。且大部分配置项都能通过API在运行时变更。
+
+==== ES配置文件路径
+
+ES有3个配置文件::
+
+. ``elasticsearch.yml`` ES实例配置；
+. ``jvm.options`` ES的JVM配置；
+. ``log4j2.properties`` ES日志配置。
+
+这些配置文件的路径在各种发行方式中各不相同：
+
+[horizontal]
+tar.gz或zip:: 默认为``$ES_HOME/config``，也可以通过环境变量``ES_PATH_CONF``指定；
+deb:: 默认为``/etc/elasticsearch``，也可以通过修改``/etc/default/elasticsearch``中的``ES_PATH_CONF=/etc/elasticsearch``指定；
+rpm::
+默认为``/etc/elasticsearch``，也可以通过修改``/etc/sysconfig/elasticsearch``中的``ES_PATH_CONF=/etc/elasticsearch``指定；
+docker:: 默认为``/usr/share/elasticsearch/config/``。
+
+==== ``elasticsearch.yml``格式
+
+ES配置文件为 http://www.yaml.org/[YAML]格式，示例：
+
+[source,yaml]
+--------------------------------------------------
+path:
+    data: /var/lib/elasticsearch
+    logs: /var/log/elasticsearch
+--------------------------------------------------
+
+等价于如下方式：
+
+[source,yaml]
+--------------------------------------------------
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+--------------------------------------------------
+
+还支持从环境变量中读取 `${...}`:
+
+[source,yaml]
+--------------------------------------------------
+node.name:    ${HOSTNAME}
+network.host: ${ES_NETWORK_HOST}
+--------------------------------------------------
+
+==== ``jvm.options``格式
+
+* 空白行会被忽略
+* `#`开头的行被认为是注释
++
+[source,text]
+-------------------------------------
+# this is a comment
+-------------------------------------
+
+* `-`开头的行视为JVM选项，对于所有JVM版本均有效
++
+[source,text]
+-------------------------------------
+# 所有版本JVM均设置最小堆内存为2G
+-Xmx2g
+-------------------------------------
+
+* `数字:-`开头的行被视作JVM选项，且只对于指定的JVM版本有效
++
+[source,text]
+-------------------------------------
+# 仅JVM 8 版本设置最小堆内存为2G
+8:-Xmx2g
+-------------------------------------
+
+* `数字-:-`开头的行被视为JVM选项，且对于指定版本及以上的JVM均有效
++
+[source,text]
+-------------------------------------
+# 仅JVM 8 及以上版本设置最小堆内存为2G
+8-:-Xmx2g
+-------------------------------------
+
+* `数字-数字:-`开头的行被视为JVM选项，且对于指定版本区间的JVM均有效
++
+[source,text]
+-------------------------------------
+# 仅JVM 8 到10版本设置最小堆内存为2G
+8-10:-Xmx2g
+-------------------------------------
+
+之前也介绍过通过 `ES_JAVA_OPTS`环境变量来指定JVM参数，两种方式可以混用。例如通过 `ES_JAVA_OPTS`环境变量临时追加JVM参数：
+[source,sh]
+---------------------------------
+export ES_JAVA_OPTS="$ES_JAVA_OPTS -Djava.io.tmpdir=/path/to/temp/dir"
+./bin/elasticsearch
+---------------------------------
+
+NOTE: JVM内置了 `JAVA_TOOL_OPTIONS`环境变量读取，ES在脚本中故意忽略了这个环境变量。因为在某些操作系统（例如，Ubuntu）上，默认情况下通过此环境变量安装了代理，我们不希望干扰Elasticsearch。
+此外，一些其他Java程序支持JAVA_OPTS环境变量(tomcat等)。 这不是JVM中内置的机制，而是生态系统中的约定。 ES不支持该环境变量，而是支持通过jvm
+.options文件或环境变量ES_JAVA_OPTS设置JVM选项，如上所述。
+
+==== ``log4j2.properties``格式
+看文件名称就知道，ES使用了 `Log4j2`作为日志工具，格式也完全遵循 `Log4j2`标准。
+
+Elasticsearch内置了3个属性：
+
+[horizontal]
+`${sys:es.logs.base_path}`:: 日志目录
+
+`${sys:es.logs.cluster_name}`:: 集群名称，在默认配置中用作日志文件名的前缀
+
+`${sys:es.logs.node_name}`:: 节点名称，如果有明确设置过节点名称的话
+
+.ES日志属性用法
+====
+* `elasticsearch.yml`
++
+[source,yaml]
+----------------------------------
+path.logs: /var/log/elasticsearch
+cluster.name: production
+node.name: node1
+----------------------------------
+
+* `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}.log`
++
+[source,text]
+-------------------------------------
+/var/log/elasticsearch/production.log
+-------------------------------------
+
+* `${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}${sys:file.separator}${sys:es.logs.node_name}.log`
++
+[source,text]
+-------------------------------------------
+/var/log/elasticsearch/production/node1.log
+-------------------------------------------
+====
+
+.ES``log4j2.properties``Demo
+[source,properties]
+--------------------------------------------------
+appender.rolling.type = RollingFile <1>
+appender.rolling.name = rolling
+appender.rolling.fileName = ${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}.log <2>
+appender.rolling.layout.type = PatternLayout
+appender.rolling.layout.pattern = [%d{ISO8601}][%-5p][%-25c{1.}] %marker%.-10000m%n
+appender.rolling.filePattern = ${sys:es.logs.base_path}${sys:file.separator}${sys:es.logs.cluster_name}-%d{yyyy-MM-dd}-%i.log.gz <3>
+appender.rolling.policies.type = Policies
+appender.rolling.policies.time.type = TimeBasedTriggeringPolicy <4>
+appender.rolling.policies.time.interval = 1 <5>
+appender.rolling.policies.time.modulate = true <6>
+appender.rolling.policies.size.type = SizeBasedTriggeringPolicy <7>
+appender.rolling.policies.size.size = 256MB <8>
+appender.rolling.strategy.type = DefaultRolloverStrategy
+appender.rolling.strategy.fileIndex = nomax
+appender.rolling.strategy.action.type = Delete <9>
+appender.rolling.strategy.action.basepath = ${sys:es.logs.base_path}
+appender.rolling.strategy.action.condition.type = IfFileName <10>
+appender.rolling.strategy.action.condition.glob = ${sys:es.logs.cluster_name}-* <11>
+appender.rolling.strategy.action.condition.nested_condition.type = IfAccumulatedFileSize <12>
+appender.rolling.strategy.action.condition.nested_condition.exceeds = 2GB <13>
+--------------------------------------------------
+
+<1> 使用 `RollingFile` appender
+<2> 日志文件 `/var/log/elasticsearch/production.log`
+<3> 日志文件滚动方式 `/var/log/elasticsearch/production-yyyy-MM-dd-i.log`，``i``是自增数
+<4> 日志滚动策略 ``TimeBasedTriggeringPolicy``
+<5> 每隔1天滚动一次
+<6> 在日期边界上滚动，而不是每隔24小时滚动
+<7> 日志滚动策略 ``SizeBasedTriggeringPolicy``
+<8> 大于256MB即触发滚动
+<9> 滚动日志时执行删除操作
+<10> 定义删除目标的过滤条件
+<11> 只删除主日志
+<12> 仅在累积了太多压缩日志时才删除
+<13> 压缩日志的大小条件为2 GB

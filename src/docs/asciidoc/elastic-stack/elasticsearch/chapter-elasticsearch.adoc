@@ -14,3 +14,5 @@
 :idseparator: -
 
 include::install-elasticsearch.adoc[]
+
+include::config-elasticsearch-intro.adoc[]
