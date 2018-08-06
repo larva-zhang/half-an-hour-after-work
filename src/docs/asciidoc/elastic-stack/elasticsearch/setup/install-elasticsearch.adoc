@@ -44,52 +44,57 @@ single-node模式只适合开发调试阶段，生产环境还是需要使用Clu
 ===== Docker Compose
 [source,bash]
 --
-$ mkdir -p elastic-stack-demo/elasticsearch/install/docker/compose
-$ cd elastic-stack-demo/elastics
-earch/install/docker/compose
-$ vim docker-compose.yml
+$ mkdir -p elastic-stack-demo/elasticsearch/setup/install/docker/compose
+$ cd elastic-stack-demo/elasticsearch/setup/install/docker/compose
+$ vim docker-compose-install-intro.yml
 --
 
 .docker-compose.yml Example:
 [source,yaml]
---
-version: '2' //<1>
+-------------
+version: '2' // <1>
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
     container_name: elasticsearch
     environment:
-      - cluster.name=docker-cluster //<2>
-      - bootstrap.memory_lock=true //<3>
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" //<4>
+    # 集群名称
+    - cluster.name=docker-cluster // <2>
+    # 锁定内存，禁止内存换页
+    - bootstrap.memory_lock=true // <3>
+    # JVM参数
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m" // <4>
     ulimits:
-      memlock: //<3>
+      # 内存锁定上限，单位KB
+      memlock:
+        # 不限制
         soft: -1
         hard: -1
-    volumes: //<5>
-      - esdata1:/usr/share/elasticsearch/data
+    volumes:
+    - esdata1:/usr/share/elasticsearch/data // <5>
     ports:
-      - 9200:9200
+    - 9200:9200
     networks:
-      - esnet
+    - esnet
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
     container_name: elasticsearch2
     environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch" // <6>
+    - cluster.name=docker-cluster
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    # 集群中可连接的其他节点的列表
+    - "discovery.zen.ping.unicast.hosts=elasticsearch" // <6>
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    volumes: //<5>
-      - esdata2:/usr/share/elasticsearch/data
+    volumes:
+    - esdata2:/usr/share/elasticsearch/data // <5>
     networks:
-      - esnet
+    - esnet
 
-volumes: //<5>
+volumes: // <5>
   esdata1:
     driver: local
   esdata2:
@@ -97,7 +102,7 @@ volumes: //<5>
 
 networks:
   esnet:
---
+-------------
 <1> docker-compose file版本，具体看安装的docker-compose版本，参考 https://docs.docker.com/compose/compose-file/[compose-file-format]
 <2> 定义集群名称
 <3> ES启动时对jvm堆大小参数检查，并禁止swap
@@ -147,16 +152,15 @@ $ docker-compose down -v
 --
 
 ===== Docker Run
-``docker run``和``docker-compose``在本质上并无差别，``docker run``可以通过指定``-e "cluster
-.name=mynewclustername"``的形式指定环境变量，也可以通过指定挂载配置文件的形式来达到相同的效果。
+``docker run``和``docker-compose``在本质上并无差别，``docker run``可以通过指定``-e "cluster.name=mynewclustername"``的形式指定环境变量，也可以通过指定挂载配置文件的形式来达到相同的效果。
 
 .Bind-mounted configuration
 Elasticsearch在容器中会从``/usr/share/elasticsearch/config/``目录下加载集群配置以及JVM参数，所以可以将自定义配置文件挂载到config目录下。
 [source,bash]
 ----
-$ mkdir -p elastic-stack-demo/elasticsearch/install/docker/run
-$ cd elastic-stack-demo/elasticsearch/install/docker/run
-$ cp elastic-stack-demo/elasticsearch/install/docker/compose/docker-compose.yml custom_elasticsearch.yml
+$ mkdir -p elastic-stack-demo/elasticsearch/setup/install/docker/run
+$ cd elastic-stack-demo/elasticsearch/setup/install/docker/run
+$ cp elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml custom_elasticsearch.yml
 $ docker run -v full_path_to/custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml docker.elastic.co/elasticsearch/elasticsearch:6.3.2
 ----
 
@@ -166,7 +170,8 @@ $ docker run -v full_path_to/custom_elasticsearch.yml:/usr/share/elasticsearch/c
 docker容器中是以用户``elasticsearch``来启动服务的，``uid:gid 1000:1000``。所以如果使用挂载配置文件的方式，必须保证挂载的目录和文件对``elasticsearch``用户是可访问的。
 ====
 
-==== 生产模式注意事项
+[[docker-es-prod-mode-hints]]
+==== Docker生产模式注意事项
 ===== 文件读写权限
 默认情况下，ES会在容器中以``elasticsearch``用户运行，用户id以及用户组id(``uid:gid``)为
 ``1000:1000``。所以必须保证``elasticsearch``用户对挂载的目录或文件有可读权限，对数据和日志文件夹有可写权限。
