@@ -10,6 +10,8 @@ services:
     - bootstrap.memory_lock=true
     # JVM参数
     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    # 修改挂载目录权限
+    - TAKE_FILE_OWNERSHIP
     ulimits:
       # 内存锁定上限，单位KB
       memlock:
@@ -31,6 +33,8 @@ services:
     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     # 集群中可连接的其他节点的列表
     - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    # 修改挂载目录权限
+    - TAKE_FILE_OWNERSHIP
     ulimits:
       memlock:
         soft: -1

@@ -45,11 +45,10 @@ single-node模式只适合开发调试阶段，生产环境还是需要使用Clu
 [source,bash]
 --
 $ mkdir -p elastic-stack-demo/elasticsearch/setup/install/docker/compose
-$ cd elastic-stack-demo/elasticsearch/setup/install/docker/compose
-$ vim docker-compose-install-intro.yml
+$ vim elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml
 --
 
-.docker-compose.yml Example:
+.docker-compose-install-intro.yml Example:
 [source,yaml]
 -------------
 version: '2' // <1>
@@ -113,7 +112,7 @@ networks:
 .Startup
 [source,bash]
 --
-$ docker-compose up
+$ docker-compose -f elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml up -d
 --
 
 .Inspect Cluster Status
@@ -142,13 +141,13 @@ OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in ve
 正常关闭docker容器，但仍保留数据卷，以便下次重启。
 [source,bash]
 --
-$ docker-compose down
+$ docker-compose -f elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml down
 --
 
 .Shutdown And Destory Data Volumes
 [source,bash]
 --
-$ docker-compose down -v
+$ docker-compose -f elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml down -v
 --
 
 ===== Docker Run
@@ -159,8 +158,8 @@ Elasticsearch在容器中会从``/usr/share/elasticsearch/config/``目录下加�
 [source,bash]
 ----
 $ mkdir -p elastic-stack-demo/elasticsearch/setup/install/docker/run
-$ cd elastic-stack-demo/elasticsearch/setup/install/docker/run
-$ cp elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml custom_elasticsearch.yml
+$ cp elastic-stack-demo/elasticsearch/setup/install/docker/compose/docker-compose-install-intro.yml
+elastic-stack-demo/elasticsearch/setup/install/docker/run/custom_elasticsearch.yml
 $ docker run -v full_path_to/custom_elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml docker.elastic.co/elasticsearch/elasticsearch:6.3.2
 ----
 
