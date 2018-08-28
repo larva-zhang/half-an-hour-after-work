@@ -1,0 +1,266 @@
+[[import-sysconfig]]
+=== 重要的系统配置
+
+理想情况下，Elasticsearch应该在服务器上单独运行并使用它可用的所有资源。 为此，需要配置操作系统以允许运行Elasticsearch的用户访问比默认允许的资源更多的资源。需要考虑修改某些系统设置。
+
+==== Config System limits
+
+Elasticsearch是较为消耗系统资源的程序，为保证性能，通常都需要调整系统资源限制。根据所使用的ES发行方式，配置方式也各不相同：
+
+[horizontal]
+* ``tar.gz``或``zip``: ``ulimit``命令(临时，重启失效)或修改``/etc/security/limits.conf``(永久)
+
+* ``rpm``: 修改``/etc/sysconfig/elasticsearch``
+
+* ``deb``: 修改``/etc/default/elasticsearch``
+
+===== ``ulimit``
+
+在Linux系统上，``ulimit``可用于临时更改资源限制。在切换到将运行Elasticsearch的用户之前，通常需要先切换到``root``用户进行设置。 例如，要将打开的文件句柄数（``ulimit -n``）设置为``65,
+536``，可以执行以下操作：
+
+[source,sh]
+--------------------------------
+sudo su  <1>
+ulimit -n 65536 <2>
+su elasticsearch <3>
+--------------------------------
+<1> 切换到 `root`.
+<2> 设置最大打开文件数为 65536
+<3> 切换回 `elasticsearch` 用户启动ES
+
+`ulimit`命令所做的修改仅对当前会话有效，可以通过 `ulimit -a`查询当前会话的设置。
+
+===== ``/etc/security/limits.conf``
+
+在Linux系统上，可以通过编辑``/etc/security/limits.conf``文件为特定用户设置持久限制。 要将elasticsearch用户的最大打开文件数设置为``65,536``，请将以下行添加到``limits
+.conf``文件中：
+
+  elasticsearch  -  nofile  65536
+
+此方法变更设置对当前会话无效，只对新建会话有效。
+
+.Ubuntu and limits.conf
+[NOTE]
+===============================
+Ubuntu系统上由``init.d``启动的进程会忽略``limits.conf``。 要启用``limits.conf``文件，请编辑``/etc/pam.d/su``并取消注释以下行：
+
+[source,sh]
+--------------------------------
+# session    required   pam_limits.so
+--------------------------------
+===============================
+
+===== systemd config
+
+如果使用``systemd``来作为service启动``rpm``或``deb``版本，则``system limits``也必须通过``systemd``来配置。
+
+``/usr/lib/systemd/system/elasticsearch.service``包含了应用的默认limits配置，要修改配置可以添加一个``/etc/systemd/system/elasticsearch
+.service.d/override.conf``文件，或者是用``sudo systemctl edit elasticsearch``命令，该命令会用编辑器自动打开配置文件。变更配置时，只需添加如下配置：
+
+[source,sh]
+---------------------------------
+[Service]
+LimitMEMLOCK=infinity
+---------------------------------
+
+编辑完成后，需reload
+
+[source,sh]
+---------------------------------
+sudo systemctl daemon-reload
+---------------------------------
+
+==== Disable swapping
+
+Swap是把内存页交换存储到文件系统缓存，以便腾出内存执行更多的程序，但这项操作在生产环境下必须禁止，因为可能会把部分JVM堆内存及其可执行页交换到磁盘上，从而影响ES的性能(毕竟生产环境的机器都是专用，不太可能跑很多任务)。
+
+Swap对性能，节点稳定性非常不利，应该不惜一切代价避免。 它可能导致垃圾收集持续数分钟而不是毫秒，并且可能导致节点响应缓慢甚至断开与群集的连接。在弹性分布式系统中，让操作系统直接终止节点更有效。
+
+有3种方法可以达到禁用swap的目的：
+
+. 全部禁用swap
+. 最小化``swappiness``
+. 内存锁定
+
+===== 全部禁用swap
+
+通常一台机器上只会运行一个Elasticsearch节点，内存使用量通过JVM参数指定，应该不需要使用swap。
+
+临时禁用::
++
+[source,sh]
+---------------------------------
+sudo swapoff -a
+---------------------------------
+
+永久禁用::
+
+注释掉 `/etc/fstab` 中所有包含 `swap` 的行
+
+===== 最小化``swappiness``
+
+设置 `vm.swappiness=1` 可以让操作系统内核的内存页交换倾向，仅在物理内存不足的情况下触发内存页交换。
+
+[source,sh]
+----
+$ sudo sysctl -w vm.swappiness=1
+----
+
+===== 内存锁定
+
+另一种选择是在Linux / Unix系统上使用 http://opengroup.org/onlinepubs/007908799/xsh/mlockall.html[mlockall]，或在Windows上使用 https://msdn.microsoft.com/en-us/library/windows/desktop/aa366895%28v=vs.85%29.aspx[VirtualLock]，以尝试将进程地址空间锁定到RAM中，从而防止任何Elasticsearch内存被换出。
+这可以通过将此行添加到``config/elasticsearch.yml``文件来完成：
+
+[source,yaml]
+--------------
+bootstrap.memory_lock: true
+--------------
+
+WARNING: 如果``mlockall``尝试分配的内存超过可用内存，则可能导致JVM或shell会话退出！
+
+在运行时，可以通过API来查询 ``mlockall``是否设置成功：
+
+[source,js]
+--------------
+GET _nodes?filter_path=**.mlockall
+--------------
+// CONSOLE
+
+* 如果设置成功：
++
+[source,sh]
+-----------
+{"nodes":{"TYoRv2zjRza7_2w1w_0tWA":{"process":{"mlockall":true}},"OriPJNUARU6CeM7D5CukTg":{"process":{"mlockall":true}}}}
+-----------
+
+* 如果设置失败：
++
+[source,sh]
+-----------
+{"nodes":{"TYoRv2zjRza7_2w1w_0tWA":{"process":{"mlockall":false}},
+"OriPJNUARU6CeM7D5CukTg":{"process":{"mlockall":false}}}}
+-----------
+
+设置失败时查询logs可见``Unable to lock JVM Memory``，出现这种情况的原因大致有两种：
+
+. 大部分是由于运行ES的用户权限不足以锁定内存导致的，只要授权给用户即可。
+. 临时目录（通常是``/tmp``）使用``noexec``选项挂载。 这可以通过使用``ES_JAVA_OPTS``环境变量指定新的临时目录来解决：
++
+[source,sh]
+-----------
+export ES_JAVA_OPTS="$ES_JAVA_OPTS -Djava.io.tmpdir=/path/to/temp/dir"
+./bin/elasticsearch
+-----------
+
+===== File Descriptors
+
+NOTE: 该设置仅对类Unix系统有效，Windows系统上的JVM仅受可用资源的限制。
+
+Elasticsearch使用大量的文件描述符或文件句柄。当系统文件描述符达到上限有可能导致数据丢失。所以需要将运行Elasticsearch的用户的打开文件描述符数量限制增加到65,536或更高。
+
+使用``.zip``或``tar.gz``发行方式的，需要通过``ulimit -n 65535``，或者编辑``/etc/security/limits.conf``添加 ``运行ES的用户 - nofile 65536``。
+
+在macos上，还需要额外添加 JVM参数``-XX:-MaxFDLimit``确保JVM会尽可能的使用FD。
+
+``rpm``或``deb``发行方式则无需担心该设置，因为在安装脚本中已经把FD上限设置为65536了。
+
+ES运行时，可以通过 Node Status API来查询每个节点的最大FD：
+
+[source,js]
+--------------------------------------------------
+GET _nodes/stats/process?filter_path=**.max_file_descriptors
+--------------------------------------------------
+
+返回：
+[source,sh]
+-----------
+{"nodes":{"TYoRv2zjRza7_2w1w_0tWA":{"process":{"max_file_descriptors":1048576}},"OriPJNUARU6CeM7D5CukTg":{"process":{"max_file_descriptors":1048576}}}}
+-----------
+
+===== 虚拟内存VMA设置
+
+Elasticsearch默认使用 https://www.elastic.co/guide/en/elasticsearch/reference/6.3/index-modules-store.html#mmapfs[mmapfs]来存储索引文件。此种存储方式要求有足够的虚拟内存地址空间。
+
+* 临时设置
++
+[source,sh]
+-----------
+sudo sysctl -w vm.max_map_count=262144
+-----------
+
+* 永久设置，在``/etc/sysctl.conf``中添加：
++
+[source,sh]
+-----------
+vm.max_map_count=262144
+-----------
+
+``rpm``或``deb``发行方式在安装时已经自动设置过了。
+
+[TIP]
+====
+Elasticsearch几种存储索引文件的方式：
+[hroniztional]
+* https://www.elastic.co/guide/en/elasticsearch/reference/6.3/index-modules-store.html#fs[fs]: 默认文件系统实现。这将根据操作环境选择最佳实现，操作环境目前是所有受支持系统上的mmapfs，但可能会发生变化。
+* https://www.elastic.co/guide/en/elasticsearch/reference/6.3/index-modules-store.html#simplefs[simplefs]: 使用随机访问文件直接实现文件系统存储（映射到Lucene SimpleFsDirectory）。 此实现具有较差的并发性能（多线程将成为瓶颈）。 当你需要索引持久性时，通常最好使用niofs。
+* https://www.elastic.co/guide/en/elasticsearch/reference/6.3/index-modules-store.html#niofs[niofs]: 使用NIO将分片索引存储在文件系统上（映射到Lucene NIOFSDirectory）。 它允许多个线程同时从同一个文件中读取。 由于SUN Java实现中存在错误，因此不建议在Windows上使用。
+* https://www.elastic.co/guide/en/elasticsearch/reference/6.3/index-modules-store.html#mmapfs[mmapfs]: 通过将文件映射到内存（mmap）来将分片索引存储在文件系统上（映射到Lucene MMapDirectory）。 内存映射使用进程中虚拟内存地址空间的一部分，等于要映射的文件的大小。 在使用此类之前，请确保您已经拥有足够的虚拟地址空间。
+====
+
+===== 最大线程数量设置
+
+Elasticsearch使用线程池来隔离不同的操作。而JVM的线程是和操作系统线程相挂钩的，所以必须将操作系统的最大线程数设置到4096或更高。
+
+* 临时设置：
++
+[source,sh]
+-----------
+sudo ulimit -u 4096
+-----------
+
+* 永久设置，通过编辑``/etc/security/limits.conf``添加如下配置：
++
+[source,sh]
+-----------
+运行ES的用户 - nproc 4096
+-----------
+
+``rpm``或``deb``发行方式在通过``systemd``作为服务运行时，已自动配置了最大线程数。
+
+===== DNS cache设置
+
+DNS解析是一个比较耗时的操作，Elasticsearch依赖Java安全管理器来管理JVM的DNS缓存。
+
+默认缓存策略如下：
+
+. 域名能够正确解析的IP地址将会永久缓存；
+. 域名解析出错的IP地址会默认缓存10秒；
+
+假如ES运行的环境需要对DNS缓存策略做修改，例如需要随时间变更DNS解析结果，只需在 http://docs.oracle.com/javase/8/docs/technotes/guides/security/PolicyFiles.html[Java Security Policy]
+(``${JAVA_HOME}/jre/lib/security/java.security``)中添加如下配置：
+
+[source,sh]
+-----------
+# 解析正确的域名ip缓存时间，单位秒
+networkaddress.cache.ttl=<timeout>
+
+# 解析错误的域名ip缓存时间，单位秒
+networkaddress.cache.negative.ttl=<timeout>
+-----------
+
+或者设置JVM参数：
+
+[source,sh]
+-----------
+# 解析正确的域名ip缓存时间，单位秒
+-Dsun.net.inetaddr.ttl=<timeout>
+
+# 解析错误的域名ip缓存时间，单位秒
+-Dsun.net.inetaddr.negative.ttl=<timeout>
+-----------
+
+===== docker设置
+
+上述系统设置对在docker中运行的Elasticsearch同样重要，``sysctl``相关只能在宿主机上执行，``ulimit``相关则可在容器启动时指定，参考<<docker-es-prod-mode-hints,
+Docker生产模式注意事项>>。
