@@ -18,3 +18,5 @@ include::setup/install-elasticsearch.adoc[]
 include::setup/config-elasticsearch-intro.adoc[]
 
 include::setup/important-settings.adoc[]
+
+include::setup/important-sysconfig.adoc[]
