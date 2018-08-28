@@ -1,0 +1,55 @@
+version: '2'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch
+    environment:
+    # 集群名称
+    - cluster.name=docker-cluster
+    # 锁定内存，禁止内存换页
+    - bootstrap.memory_lock=true
+    # JVM参数
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:HeapDumpPath=/usr/share/elasticsearch/dump -XX:+UnlockDiagnosticVMOptions
+    -XX:+PrintCompressedOopsMode -XX:ErrorFile=/usr/share/elasticsearch/dump/error.log"
+    # 修改挂载目录权限
+#    - TAKE_FILE_OWNERSHIP
+    ulimits:
+      # 内存锁定上限，单位KB
+      memlock:
+        # 不限制
+        soft: -1
+        hard: -1
+    volumes:
+    - ~/es/data1:/usr/share/elasticsearch/data
+    - ~/es/logs1:/usr/share/elasticsearch/logs
+    ports:
+    - 9200:9200
+    networks:
+    - esnet
+    user: "elasticsearch"
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch2
+    environment:
+    - cluster.name=docker-cluster
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:HeapDumpPath=/usr/share/elasticsearch/dump -XX:+UnlockDiagnosticVMOptions
+    -XX:+PrintCompressedOopsMode -XX:ErrorFile=/usr/share/elasticsearch/dump"
+    # 集群中可连接的其他节点的列表
+    - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    # 符合成为master节点条件的最小节点数
+    - "discovery.zen.ping.minimum_master_nodes=2"
+    # 修改挂载目录权限
+#    - TAKE_FILE_OWNERSHIP
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - ~/es/data2:/usr/share/elasticsearch/data
+    - ~/es/logs2:/usr/share/elasticsearch/logs
+    networks:
+    - esnet
+    user: "elasticsearch"
+networks:
+  esnet:

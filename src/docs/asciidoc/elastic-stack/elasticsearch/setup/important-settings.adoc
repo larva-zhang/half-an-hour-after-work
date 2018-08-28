@@ -144,7 +144,7 @@ heap size [1.9gb], compressed ordinary object pointers [true]
 
 ==== JVM heap dump path
 
-默认情况下，Elasticsearch将JVM heap dump文件存放到 ``data``目录。如果此路径不适合接收堆转储，则应修改``jvm.options``中的条目``-XX:HeapDumpPath = xxx``。
+默认情况下，Elasticsearch将JVM heap dump文件存放到 ``data``目录。如果此路径不适合接收堆转储，则应修改``jvm.options``中的条目``-XX:HeapDumpPath=xxx``。
 如果指定固定文件名而不是目录，则JVM将重复使用相同的文件;
 这是一种防止堆转储在堆转储路径中累积的机制。 或者，可以通过操作系统配置crontab任务删除过时的dump文件。
 
@@ -155,4 +155,91 @@ heap size [1.9gb], compressed ordinary object pointers [true]
 ==== JVM fatal error日志
 
 默认情况下，Elasticsearch将JVM配置为将致命错误日志写入默认日志记录目录。这些是JVM在遇到致命错误（例如，分段错误）时生成的日志。如果此路径不适合接收日志，则应将``jvm
-.options``中的条目``-XX:ErrorFile = XXX``修改为其他路径。
+.options``中的条目``-XX:ErrorFile=XXX``修改为其他路径。
+
+==== docker example
+
+docker容器启动时，默认``data``和``logs``目录为``/usr/share/elasticsearch/data``和``/usr/share/elasticsearch/logs``，所以只需挂载数据卷到相应目录即可。
+
+.compose file
+[source,sh]
+-----------
+$ mkdir -p elastic-stack-demo/elasticsearch/setup/important-settings/docker/compose
+$ vim elastic-stack-demo/elasticsearch/setup/important-settings/docker/compose/docker-compose-with-essettings.yml
+-----------
+
+[source,yaml]
+-------------
+version: '2'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch
+    environment:
+    # 集群名称
+    - cluster.name=docker-cluster
+    # 锁定内存，禁止内存换页
+    - bootstrap.memory_lock=true
+    # JVM参数
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:HeapDumpPath=/usr/share/elasticsearch/dump -XX:+UnlockDiagnosticVMOptions
+    -XX:+PrintCompressedOopsMode -XX:ErrorFile=/usr/share/elasticsearch/dump/error.log"
+    # 修改挂载目录权限
+    - TAKE_FILE_OWNERSHIP
+    ulimits:
+      # 内存锁定上限，单位KB
+      memlock:
+        # 不限制
+        soft: -1
+        hard: -1
+    volumes:
+    - ~/elasticsearch/data1:/usr/share/elasticsearch/data
+    - ~/elasticsearch/logs1:/usr/share/elasticsearch/logs
+    ports:
+    - 9200:9200
+    networks:
+    - esnet
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+    container_name: elasticsearch2
+    environment:
+    - cluster.name=docker-cluster
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m -XX:HeapDumpPath=/usr/share/elasticsearch/dump -XX:+UnlockDiagnosticVMOptions
+    -XX:+PrintCompressedOopsMode -XX:ErrorFile=/usr/share/elasticsearch/dump"
+    # 集群中可连接的其他节点的列表
+    - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    # 符合成为master节点条件的最小节点数
+    - "discovery.zen.ping.minimum_master_nodes=2"
+    # 修改挂载目录权限
+    - TAKE_FILE_OWNERSHIP
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - ~/elasticsearch/data2:/usr/share/elasticsearch/data
+    - ~/elasticsearch/logs2:/usr/share/elasticsearch/logs
+    networks:
+    - esnet
+
+networks:
+  esnet:
+-------------
+
+.startup
+[source,sh]
+-----------
+$ docker-compose -f elastic-stack-demo/elasticsearch/setup/important-settings/docker/compose/docker-compose-with-essettings.yml up
+-----------
+
+.shutdown
+[source,sh]
+-----------
+$ docker-compose -f elastic-stack-demo/elasticsearch/setup/important-settings/docker/compose/docker-compose-with-essettings.yml down
+-----------
+
+.shutdown and destroy volumes
+[source,sh]
+-----------
+$ docker-compose -f elastic-stack-demo/elasticsearch/setup/important-settings/docker/compose/docker-compose-with-essettings.yml down -v
+-----------

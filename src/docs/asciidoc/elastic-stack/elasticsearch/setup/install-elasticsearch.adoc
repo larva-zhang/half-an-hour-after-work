@@ -189,6 +189,22 @@ chgrp 1000 esdatadir
 docker run -e "TAKE_FILE_OWNERSHIP"
 ----
 
+.容器用户问题
+[WARNING]
+=========
+如果宿主机上有``uid=1000``的用户，则docker默认会以``root(uid=0)
+``用户来启动，此时就不能通过``TAKE_FILE_OWNERSHIP``环境变量来变更挂载目录权限。只能通过第一种方式来授权，或者指定容器以``uid 1000``来启动：
+[source,sh]
+-----------
+docker run -u 1000
+-----------
+
+[source,yaml]
+-----------
+
+-----------
+=========
+
 ===== 进程最大VMA(虚拟内存区域)数
 系统参数``vm.max_map_count``不得小于``262144``，否则启动会报如下错误：
 [source,bash]
