@@ -1,0 +1,174 @@
+== MSYS2
+在很多情况下，需要在Windows下使用一些Linux下的常见软件，如grep，awk , gcc , gmp , gsl等。虽然Windows10提供了Windows Subsystem for Linux(WSL)，但是依然不成熟。常见的方案是：MSYS，GnuWin32以及 Cygwin。不过，cygwin比较繁琐。使用MSYS2算是一个比较好的方案。
+
+.Windows下几种Unix-Style模拟工具比较
+[options="header,footer"]
+|=======================
+|特点 |Cygwin |MinGW/MSYS | MSYS2
+|是否GNU |否 |是 |是
+|软件支持 |支持绝大多数的GNU软件 |实现了Bash等主要的Linux程序 |原生 64/32bit 支持
+|GCC编译 |独立的 Windows/Linux 程序编译(MingGW32 交叉编译/依赖 cygwin1.dll) |独立的 Windows 程序编译 |独立的 Windows 程序编译
+|中文支持 |直接支持中文显示和输入法 |需要配置才能支持中文显示和输入，删除一个中文字符需要删除 2 次 |支持中文显示和输入法，中文帮助系统和中文提示（部分软件）
+|运行速度 |慢	 |快 |快
+|=======================
+
+.参考网址：
+
+* http://msys2.github.io[MSYS2 GitHub]
+* http://www.msys2.org/[MSYS2 HomePage]
+
+=== MSYS2 安装
+
+MSYS2安装教程参考``http://www.msys2.org/[MSYS2 HomePage]``，下载``exe``然后一路``next``即可。
+
+=== MSYS2 配置
+
+==== 包管理
+
+MSYS2默认采用``pacman``做为包管理工具，因此所有软件包管理均可通过``pacman``进行。
+
+.pacman常用命令
+. ``pacman -Q``查看已安装的软件包
+. ``pacman -S -g``查看软件组
+. ``pacman -Q -g <package_groups>``查看软件组包含的软件
+. ``pacman -Q -l <package_names>``查询软件包的内容
+. ``pacman -Q -s nettle``查询软件所在的包
+. ``pacman -Sy``更新本地包数据
+. ``pacman -S --needed <package_names|package_groups>``升级指定软件包并忽略已是最新版的包
+. ``pacman -Su``升级全部软件包
+. ``pacman -S <package_names|package_groups>``安装软件包或软件组
+. ``pacman -R <package_names|package_groups>``删除软件包或软件组
+. ``pacman -Ss <name_pattern>``搜索软件包或软件组
+. ``pacman -h``查看帮助文档
+
+更多``pacman``相关可通过 https://wiki.archlinux.org/index.php/pacman[Arch Wiki]查询。
+
+===== 修改pacman源
+
+刚安装完的MSYS2默认``pacman``源是国外的，因此需要先修改源地址为国内的镜像。
+
+``pacman``源地址在``/etc/pacman.d/``目录下：
+[source,sh]
+-----------
+.
+|-- gnupg
+|-- mirrorlist.mingw32 <1>
+|-- mirrorlist.mingw64 <2>
+|-- mirrorlist.msys <3>
+-----------
+<1> mingw32位镜像地址
+<2> mingw64位镜像地址
+<3> msys镜像地址
+
+因为MSYS2默认没有安装编辑器，所以可以用``sed``命令来添加镜像地址：
+[source,sh]
+-----------
+sed -i '1i\Server = https://mirrors.ustc.edu.cn/msys2/mingw/i686' /etc/pacman.d/mirrorlist.mingw32
+
+sed -i '1i\Server = https://mirrors.ustc.edu.cn/msys2/mingw/x86_64' /etc/pacman.d/mirrorlist.mingw64
+
+sed -i '1i\Server = https://mirrors.ustc.edu.cn/msys2/msys/$arch' /etc/pacman.d/mirrorlist.msys
+-----------
+这里使用的是中科大的镜像地址，也可以选择清华大学的镜像 https://mirrors.tuna.tsinghua.edu.cn/[https://mirrors.tuna.tsinghua.edu.cn/]。
+
+=== 代理
+
+如果需要代理才能上网的话，可以在``/etc/profile.d/``增加``proxy.sh``，内容如下:
+
+[source,text]
+-------------
+export http_proxy=%PROXY_SERVER%:%PROXY_PORT%
+export https_proxy=%PROXY_SERVER%:%PROXY_PORT%
+export ftp_proxy=%PROXY_SERVER%:%PROXY_PORT%
+export HTTP_PROXY=%PROXY_SERVER%:%PROXY_PORT%
+export HTTPS_PROXY=%PROXY_SERVER%:%PROXY_PORT%
+export FTP_PROXY=%PROXY_SERVER%:%PROXY_PORT%
+-------------
+
+=== 修改用户目录映射
+
+修改``/etc/fstab``，映射用户目录，与宿主共享配置，这样类似``gitconfig``这样的配置只需要配置一份。
+
+[source,sh]
+-----------
+echo "C:/Users /home ntfs binary,noacl,auto 1 1" >> /etc/fstab
+-----------
+
+[source,sh]
+-----------
+# For a description of the file format, see the Users Guide
+# http://cygwin.com/cygwin-ug-net/using.html#mount-table
+
+# DO NOT REMOVE NEXT LINE. It remove cygdrive prefix from path
+none / cygdrive binary,posix=0,noacl,user 0 0
+C:/Users /home ntfs binary,noacl,auto 1 1
+-----------
+
+=== 修改公共``HOME``目录
+
+在宿主机环境变量中添加``MSYS2_PATH_TYPE``值为``inherit``。
+
+=== 安装开发环境
+
+[source,sh]
+-----------
+pacman -Syu --needed base-devel msys2-devel mingw-w64-x86_64-toolchain
+-----------
+
+=== 安装``zsh``和``oh my zsh``
+
+. 安装``zsh``
++
+[source,sh]
+-----------
+pacman -S zsh
+-----------
+
+. 安装``oh my zsh``
++
+[source,sh]
+-----------
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+-----------
+
+. 替换默认shell为zsh
++
+因为MSYS2不包含``chsh``命令，所以必须手动修改默认shell
+
+.. 修改``~/.bash_profile``自动启动zsh(推荐)
++
+[source,sh]
+-----------
+echo "zsh" >> ~/.bash_profile
+
+或
+
+echo "exec zsh" >> ~/.bash_profile
+-----------
+两者的区别是``zsh``会在启动zsh后保持当前bash进程不退出，因此每次退出登录时需要退出两次，而``exec zsh``则会立即退出当前bash进程。
+
+.. 修改MSYS2启动脚本(不推荐)
++
+具体baidu或 google
+
+TIP: ``zsh``的配置文件是``~/.zshrc``，可以通过编辑这个文件来指定主题和插件。
+
+=== 重新安装
+
+如果在使用过程中， MSYS2 出现不可恢复的问题的时候，可以通过保存安装的 packages 到文件中，再通过此文件重新安装。
+
+* 保存现有安装包列表到 C 盘中的 ``packages.txt``
++
+[source,sh]
+-----------
+pacman -Qqe | xargs echo > /c/packages.txt
+-----------
+
+* 根据保存的 ``packages.txt`` 安装
++
+[source,sh]
+-----------
+pacman -Sy
+pacman --needed -S bash pacman pacman-mirrors msys2-runtime
+pacman -S --needed --force $(cat /c/packages.txt)
+-----------
