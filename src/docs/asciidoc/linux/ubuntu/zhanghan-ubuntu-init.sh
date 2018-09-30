@@ -4,6 +4,10 @@
 ubuntu_alias=$(lsb_release -c| awk '{print $2}')
 mirrors_domain='mirrors.ustc.edu.cn'
 devtools_dir=$HOME/devtools
+download_dir=$HOME/Downloads/
+
+mkdir -p $download_dir
+mkdir -p $devtools_dir
 
 echo 'ubuntu alias is '$ubuntu_alias
 
@@ -28,11 +32,11 @@ sudo sh -c 'echo "deb http://archive.canonical.com/ubuntu '$ubuntu_alias' partne
 # update & upgrade system software
 echo 'update & upgrade system software'
 sudo apt-get update
-sudo apt-get dist-upgrade
+sudo apt-get dist-upgrade -y
 
 # install
 echo 'install basic software'
-sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common git git-lfs wget vim fcitx openvpn
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common git git-lfs wget vim fcitx openvpn aria2
 
 # install google-chrome
 echo 'install google-chrome'
@@ -42,8 +46,8 @@ sudo apt-get install -y google-chrome-stable
 
 # install sogoupinyin
 echo 'install sogoupinyin'
-wget -T 10 -q -O http://cdn2.ime.sogou.com/dl/index/1524572264/sogoupinyin_2.2.0.0108_amd64.deb
-dkpg -i sogoupinyin_2.2.0.0108_amd64.deb
+aria2c -d $download_dir http://cdn2.ime.sogou.com/dl/index/1524572264/sogoupinyin_2.2.0.0108_amd64.deb
+dkpg -i $download_dir/sogoupinyin_2.2.0.0108_amd64.deb
 
 # install docker
 echo 'install docker'
@@ -57,16 +61,12 @@ sudo add-apt-repository ppa:lyzardking/ubuntu-make
 sudo apt-get update
 sudo apt-get install -y ubuntu-make
 
-# install develop tools
-echo 'start install develop tools'
-mkdir -p $devtools_dir
-
 # install open jdk
 mkdir -p $devtools_dir/lang/java/
 cd $devtools_dir/lang/java/
 
 echo 'install open jdk8'
-wget -T 10 -t 0 -P $devtools_dir/lang/java https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz
+aria2c -d $devtools_dir/lang/java https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz
 tar -xf $devtools_dir/lang/java/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz
 # config java 8 env variables
 echo "JAVA_8_HOME=$devtools_dir/lang/java/jdk1.8.0_192" >> ~/.bash_profile
@@ -75,7 +75,7 @@ echo "PATH=$PATH:$JAVA_8_HOME/bin" >> ~/.bash_profile
 source ~/.bash_profile
 
 echo 'install open jdk11'
-wget -T 10 -t 0 -P $devtools_dir/lang/java https://download.java.net/java/ga/jdk11/openjdk-11_linux-x64_bin.tar.gz
+aria2c -d $devtools_dir/lang/java https://download.java.net/java/ga/jdk11/openjdk-11_linux-x64_bin.tar.gz
 tar -xvf jdk-11_linux-x64_bin.tar.gz
 # config java 11 env variables
 echo "JAVA_11_HOME=$devtools_dir/lang/java/jdk-11" >> ~/.bash_profile
@@ -131,7 +131,7 @@ source ~/.bash_aliases
 
 # install hosts dock
 echo 'install hosts-dock'
-wget -T 10 -t 0 -P $devtools_dir/tools/ https://github.com/eshengsky/HostsDock/releases/download/v3.1.0/HostsDock-linux-x64.tar.gz
+aria2c -d $devtools_dir/tools/ https://github.com/eshengsky/HostsDock/releases/download/v3.1.0/HostsDock-linux-x64.tar.gz
 tar -xf HostsDock-linux-x64.tar.gz
 echo "alias hostsdock='nohup $devtools_dir/tools/HostsDock-linux-x64/HostsDock 1>/dev/null 2>&1 &" >> ~/.bash_aliases
 source ~/.bash_aliases
