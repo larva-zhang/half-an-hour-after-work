@@ -4,5 +4,12 @@
 
 [source,shell]
 ----
-include::zhanghan-ubuntu-init.sh[]
+include::ubuntu-desktop-init.sh[]
+----
+
+==== 系统开发环境初始化
+
+[source,shell]
+----
+include::ubuntu-desktop-dev-env-init.sh[]
 ----
