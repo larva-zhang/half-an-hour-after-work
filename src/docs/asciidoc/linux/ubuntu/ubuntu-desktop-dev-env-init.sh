@@ -22,7 +22,8 @@ tools_hostsdock_filename=$(echo $tools_hostsdock_url|awk -F/ '{print $9}')
 #========================
 # install basic dev tools
 #========================
-sudo apt-get install -y git openvpn
+sudo apt-get update
+sudo apt install -y git openvpn
 
 # mkdir
 mkdir -p $download_dir
@@ -33,18 +34,18 @@ mkdir -p $devtools_dir
 #========================
 # install open jdk
 echo 'install open jdk'
-sudo apt-get install -y openjdk-8-jdk openjdk-8-source openjdk-11-jdk openjdk-11-source
+sudo apt install -y openjdk-8-jdk openjdk-8-source openjdk-11-jdk openjdk-11-source
 
 # install go
 echo 'install go-lang'
-sudo apt-get install -y golang
+sudo apt install -y golang
 
 # install docker
 echo 'install docker'
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add
 sudo sh -c 'echo "deb https://download.docker.com/linux/ubuntu '$ubuntu_alias' stable" > /etc/apt/sources.list.d/docker.list'
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-compose
+sudo apt install -y docker-ce docker-compose
 
 #========================
 # install tools
@@ -53,7 +54,7 @@ tools_dir=$devtools_dir/tools/
 mkdir -p $tools_dir
 # install build tools maven
 echo 'install maven'
-sudo apt-get install -y maven
+sudo apt install -y maven
 maven_home=mvn -v|grep -i 'maven home'|awk '{print $3}'
 mkdir -p $HOME/.m2
 cp -n $maven_home/conf/settings.xml $HOME/.m2
@@ -77,7 +78,7 @@ curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microso
 sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
 sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
 sudo apt-get update
-sudo apt-get install -y code
+sudo apt install -y code
 rm -rf microsoft.gpg
 
 # install ide idea-ultimate
