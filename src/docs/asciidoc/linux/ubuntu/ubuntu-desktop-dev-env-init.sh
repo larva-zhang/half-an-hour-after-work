@@ -64,7 +64,7 @@ echo 'install hosts-dock'
 rm -rf $download_dir/$tools_hostsdock_filename
 aria2c -d $download_dir $tools_hostsdock_url
 tar -xvf $download_dir/$tools_hostsdock_filename -C $tools_dir
-echo "alias hostsdock='nohup $tools_dir/HostsDock-linux-x64/HostsDock 1>/dev/null 2>&1 &" >> $HOME/.bash_aliases
+echo "alias hostsdock='nohup $tools_dir/HostsDock-linux-x64/HostsDock 1>/dev/null 2>&1 &'" >> $HOME/.bash_aliases
 source $HOME/.bash_aliases
 
 #========================
@@ -88,7 +88,7 @@ mkdir -p $idea_dir
 rm -rf $download_dir/$ide_idea_filename
 aria2c -d $download_dir $ide_idea_url
 tar -xvf $download_dir/$ide_idea_filename -C $idea_dir
-echo "alias idea='nohup sh $idea_dir/bin/idea.sh 1>/dev/null 2>&1 &" >> $HOME/.bash_aliases
+echo "alias idea='nohup sh $idea_dir/$(ls $idea_dir)/bin/idea.sh 1>/dev/null 2>&1 &'" >> $HOME/.bash_aliases
 source $HOME/.bash_aliases
 
 # install ide datagrip
@@ -98,7 +98,8 @@ mkdir -p $datagrip_dir
 rm -rf $download_dir/$ide_datagrip_filename
 aria2c -d $download_dir $ide_datagrip_url
 tar -xvf $download_dir/$ide_datagrip_filename -C $datagrip_dir
-echo "alias datagrip='nohup sh $datagrip_dir/bin/datagrip.sh 1>/dev/null 2>&1 &" >> $HOME/.bash_aliases
+echo "alias datagrip='nohup sh $datagrip_dir/$(ls $datagrip_dir)/bin/datagrip.sh 1>/dev/null 2>&1 &'" >> $HOME/
+.bash_aliases
 source $HOME/.bash_aliases
 
 # auto clean
