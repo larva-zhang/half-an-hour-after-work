@@ -42,8 +42,8 @@ sudo apt-get dist-upgrade -y
 
 # install basic software
 echo 'install basic software'
-sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common wget vim fcitx aria2 git \
-    openvpn python-pip tree autojump
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common wget vim aria2 git \
+    openvpn python-pip tree autojump fcitx-bin fcitx-table
 
 # install google-chrome
 echo 'install google-chrome'
@@ -54,12 +54,15 @@ sudo apt-get install -y google-chrome-stable
 
 # install sogoupinyin
 echo 'install sogoupinyin'
-aria2c -s 10 -x 10 -d http://cdn2.ime.sogou.com/dl/index/1524572264/sogoupinyin_2.2.0.0108_amd64.deb
-dkpg -i sogoupinyin_2.2.0.0108_amd64.deb
+aria2c -s 10 -x 10 http://cdn2.ime.sogou.com/dl/index/1524572264/sogoupinyin_2.2.0.0108_amd64.deb
+sudo apt-get install -yf ./sogoupinyin_2.2.0.0108_amd64.deb
 rm -rf sogoupinyin_2.2.0.0108_amd64.deb
+im-config -n fcitx
 
 # auto clean
 echo 'auto clean'
 sudo apt-get purge
 sudo apt-get autoremove -y
 sudo apt-get autoclean
+
+sudo reboot now
