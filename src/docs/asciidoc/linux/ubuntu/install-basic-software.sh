@@ -57,5 +57,5 @@ rm -rf sogoupinyin_2.2.0.0108_amd64.deb
 # auto clean
 echo 'auto clean'
 sudo apt-get purge
-sudo apt-get autoremove
+sudo apt-get autoremove -y
 sudo apt-get autoclean
