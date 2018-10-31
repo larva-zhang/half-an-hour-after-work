@@ -13,6 +13,10 @@ mirrors_domain='mirrors.ustc.edu.cn'
 
 echo 'ubuntu alias is '$ubuntu_alias
 
+# switch default shell to bash
+echo 'switch default shell to bash'
+sudo ln -sf bash /bin/sh
+
 # backup system sources
 echo 'backup system sources'
 sudo mv /etc/apt/sources.list /etc/apt/sources_backup.list
@@ -36,7 +40,7 @@ echo 'update & upgrade system software'
 sudo apt-get update
 sudo apt-get dist-upgrade -y
 
-# install
+# install basic software
 echo 'install basic software'
 sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common wget vim fcitx aria2 git \
     openvpn python-pip tree autojump
