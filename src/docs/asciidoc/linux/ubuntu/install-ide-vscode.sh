@@ -17,7 +17,7 @@ fi
 if [ -z $(apt list libgconf2-4|awk '{print $4}') ]
 then
     sudo apt-get update
-    sudo apt-get install libgconf2-4
+    sudo apt-get install -y libgconf2-4
     sudo apt-get purge
     sudo apt-get autoremove -y
     sudo apt-get autoclean
