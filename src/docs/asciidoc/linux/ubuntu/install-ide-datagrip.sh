@@ -49,6 +49,6 @@ Categories=Development;IDE;
 Terminal=false
 StartupWMClass=jetbrains-datagrip" > $HOME/Desktop/jetbrains-datagrip.desktop
 
-chomd 755 $HOME/Desktop/datagrip.desktop
+chomd 755 $HOME/Desktop/jetbrains-datagrip.desktop
 
 echo 'install ide datagrip done'
