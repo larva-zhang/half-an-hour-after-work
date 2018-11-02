@@ -50,4 +50,6 @@ Categories=Development;IDE;
 Terminal=false
 StartupWMClass=jetbrains-idea" > $HOME/Desktop/jetbrains-idea.desktop
 
+chmod 755 $HOME/Desktop/jetbrains-idea.desktop
+
 echo 'install ide idea done'
