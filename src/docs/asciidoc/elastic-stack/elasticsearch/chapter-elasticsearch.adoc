@@ -20,3 +20,5 @@ include::setup/config-elasticsearch-intro.adoc[]
 include::setup/important-settings.adoc[]
 
 include::setup/important-sysconfig.adoc[]
+
+include::setup/bootstrap-checks.adoc[]

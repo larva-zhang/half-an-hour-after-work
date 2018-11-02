@@ -52,6 +52,19 @@ sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable
 sudo apt-get update
 sudo apt-get install -y google-chrome-stable
 
+# add google chrome desktop
+echo "[Desktop Entry]
+Version=1.0
+Name=Google Chrome
+Exec=/usr/bin/google-chrome-stable %U
+StartupNotify=true
+Terminal=false
+Icon=google-chrome
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml_xml;image/webp;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
+" > $HOME/Desktop/google-chrome.desktop
+
 # install sogoupinyin
 echo 'install sogoupinyin'
 aria2c -s 10 -x 10 http://cdn2.ime.sogou.com/dl/index/1524572264/sogoupinyin_2.2.0.0108_amd64.deb
