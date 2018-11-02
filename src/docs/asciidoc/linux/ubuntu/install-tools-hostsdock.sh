@@ -39,10 +39,13 @@ Version=1.0
 Type=Application
 Name=HostsDock
 Icon=$tools_hostsdock_dir/resources/app/public/image/hostsdock.ico
-Exec=pkexec $tools_hostsdock_dir/HostsDock
+Exec=$tools_hostsdock_dir/HostsDock
 Comment=Tools for Switch Hosts
 Categories=Development;Tools;
 Terminal=false" > $HOME/Desktop/hostsdock.desktop
 chmod 755 $HOME/Desktop/hostsdock.desktop
+
+# modify /etc/hosts permission
+sudo chmod o+w /etc/hosts
 
 echo 'install tools hostsdock done'
