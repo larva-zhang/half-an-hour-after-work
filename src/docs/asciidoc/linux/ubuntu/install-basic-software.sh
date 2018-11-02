@@ -64,6 +64,7 @@ Type=Application
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml_xml;image/webp;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
 " > $HOME/Desktop/google-chrome.desktop
+chmod 755 $HOME/Desktop/google-chrome.desktop
 
 # install sogoupinyin
 echo 'install sogoupinyin'
