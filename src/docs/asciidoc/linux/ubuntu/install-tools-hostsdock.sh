@@ -31,12 +31,18 @@ rm -rf $download_dir/$tools_hostsdock_filename
 aria2c -s 10 -x 10 -d $download_dir $tools_hostsdock_url
 rm -rf $tools_dir/*hostsdock*
 tar -xf $download_dir/$tools_hostsdock_filename -C $tools_dir
+tools_hostsdock_dir=$(find $tools_dir -maxdepth 1 -type d -iname 'hostsdock*')
 
-# configure alias
-echo >> $HOME/.bash_aliases
-echo "alias hostsdock='nohup "$(find $tools_dir -maxdepth 1 -type d -iname 'hostsdock*')"/HostsDock 1>/dev/null 2>&1 &'" >> $HOME/.bash_aliases
-source $HOME/.bash_aliases
-
-hostsdock
+# add hostsdock desktop
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=HostsDock
+Icon=$tools_hostsdock_dir/resources/app/public/image/hostsdock.ico
+Exec=pkexec $tools_hostsdock_dir/HostsDock
+Comment=Tools for Switch Hosts
+Categories=Development;Tools;
+Terminal=false" > $HOME/Desktop/hostsdock.desktop
+chmod 755 $HOME/Desktop/hostsdock.desktop
 
 echo 'install tools hostsdock done'
