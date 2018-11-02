@@ -41,12 +41,24 @@ rm -rf $download_dir/$ide_vscode_filename
 aria2c -s 10 -x 10 -d $download_dir $ide_vscode_url
 rm -rf $ide_dir/*vscode*
 tar -xf $download_dir/$ide_vscode_filename -C $ide_dir
+ide_vscode_dir=$(find $ide_dir -maxdepth 1 -type d -iname 'vscode*')
 
 # configure alias
 echo >> $HOME/.bash_aliases
-echo "alias vscode='nohup "$(find $ide_dir -maxdepth 1 -type d -iname 'vscode*')"/code 1>/dev/null 2>&1 &'" >> $HOME/.bash_aliases
+echo "alias vscode='nohup $ide_vscode_dir/code 1>/dev/null 2>&1 &'" >> $HOME/.bash_aliases
 source $HOME/.bash_aliases
 
-vscode
+# add vscode desktop
+echo "[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Visual Studio Code
+Icon=$ide_vscode_dir/resources/app/resources/linux/code.png
+Exec=$ide_vscode_dir/code
+Comment=IDE for Text Editor
+Categories=Development;IDE;
+Terminal=false" > $HOME/Desktop/visual-studio-code.desktop
+
+chmod 755 $HOME/Desktop/visual-studio-code.desktop
 
 echo 'install ide vscode done'
